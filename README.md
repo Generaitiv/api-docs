@@ -25,6 +25,7 @@ await fetch("https://api.generaitiv.xyz/v1/", {
 **/q/latest-tokens** : This endpoint returns a list of the latest tokens listed on the platform
 
 Example
+
 ```
 const latestTokens = await fetch("https://api.generaitiv.xyz/v1/q/latest-tokens/?page=0&page_size=50", {
   headers: authHeaders
@@ -62,6 +63,7 @@ await latestTokens.json()
 **/q/latest-collections** : This endpoint returns a list of thr latest collections 
 
 Example
+
 ```
 const latestCollections = await fetch("https://api.generaitiv.xyz/v1/q/latest-collections/?page=0&page_size=50", {
   headers: authHeaders
@@ -123,16 +125,25 @@ await tokensInCollection.json()
 }
 ```
 ## Image Upload
-**/upload/token/:tokenId/:filename** : This endpoint returns a signed put url for uploading an image given a tokenId
+**/upload/token/[tokenId]/[fileName]** : This endpoint returns a signed put url for uploading an image given a tokenId. The signed url returned accepts a javascript [File](https://developer.mozilla.org/en-US/docs/Web/API/File) object as the body of a put request which will be uploaded and set as the image of the token.
 
 Example
 ```
+const uploadPutUrl = await fetch("https://api.generaitiv.xyz/v1/upload/token/0xb6bdb5f73b6d717eb6949aee9f9551298493390e000000000000000000000002/a.jpg/", {
+  headers: authHeaders
+});
+await uploadPutUrl.json()
+-------------------------
+{
+  "url":"https://s3.us-east-1.amazonaws.com/scratch.generaitiv.xyz/upload/production/..."
+}
 ```
 
 ## User endpoints
-**/u/:id** : This endpoint returns the user metadata given a wallet address
+**/u/[address]** : This endpoint returns the user metadata given a wallet address
 
 Example
+
 ```
 const user = await fetch("https://api.generaitiv.xyz/v1/u/0x4e3A99830E5ffb86952B14aDBD5746ce84A6F6F3/", {
   headers: authHeaders
@@ -150,9 +161,10 @@ await user.json()
 }
 ```
 
-**/u/:id/collections** : Return the collections made by a given user
+**/u/[address]/collections** : Return the collections made by a given user
 
 Example
+
 ```
 const userCollections = await fetch("https://api.generaitiv.xyz/v1/u/0x1BEC0E6266e97f0C7C42aa720959e46598DD8Ce1/collections/", {
   headers: authHeaders
@@ -184,6 +196,7 @@ await userCollections.json()
 **/c/[slug]** : Return the metadata for a collection given a slug or address
 
 Example
+
 ```
 const collectionMetadata = await fetch("https://api.generaitiv.xyz/v1/u/0x1BEC0E6266e97f0C7C42aa720959e46598DD8Ce1/collections/", {
   headers: authHeaders
@@ -211,6 +224,7 @@ await collectionMetadata.json()
 *Hint* the collection address for and virtual token will be 0x4b3887515Cd5A0deEaBd6b59f0B8CC87d3608c95
 
 Example
+
 ```
 const tokenMetadata = await fetch("https://api.generaitiv.xyz/v1/c/0x4b3887515Cd5A0deEaBd6b59f0B8CC87d3608c95/0x1bec0e6266e97f0c7c42aa720959e46598dd8ce100000000000000000000004e/", {
   headers: authHeaders
@@ -261,6 +275,7 @@ await tokenMetadata.json()
 **/c/virtual/slug-from-id/[tokenId]** : Return the collection slug of a given tokenId
 
 Example
+
 ```
 const tokenSlug = await fetch("https://api.generaitiv.xyz/v1/c/virtual/slug-from-id/0x1bec0e6266e97f0c7c42aa720959e46598dd8ce100000000000000000000004e/", {
   headers: authHeaders
@@ -275,15 +290,41 @@ await tokenSlug.json()
 **/c/virtual/next/[address]** : Return the next tokenId for a given user wallet address (to create a new token)
 
 Example
+
 ```
+const nextTokenId = await fetch("https://api.generaitiv.xyz/v1/c/virtual/slug-from-id/0x1bec0e6266e97f0c7c42aa720959e46598dd8ce100000000000000000000004e/", {
+  headers: authHeaders
+});
+await tokenSlug.json()
+-------------------------
+{
+  "tokenId":"0xb6bdb5f73b6d717eb6949aee9f9551298493390e000000000000000000000002"
+}
 ```
 
 ## POST Endpoints
 
-**/c/virtual/token/:id/:tokenId** : Create a new token
+**/c/virtual/token/[slug]/[tokenId]** : Create a new token
 
 Example
+
 ```
+const newToken = await fetch("https://api.generaitiv.xyz/v1/c/virtual/token/aaabbb/0xb6bdb5f73b6d717eb6949aee9f9551298493390e000000000000000000000002/", {
+  headers: authHeaders,
+  method: "POST",
+  body: JSON.stringify({
+    "tokenId":"0xb6bdb5f73b6d717eb6949aee9f9551298493390e000000000000000000000002",
+    "amount":"0x0000000000000000000000000000000000000000000000000000000000000002",
+    "attributes":[{"trait_type":"2","value":"2"}],
+    "name":"2",
+    "description":"2"
+  })
+});
+await newToken.json()
+-------------------------
+{
+  "success":"true"
+}
 ```
 
 ## API Key endpoints
@@ -291,5 +332,14 @@ Example
 **/consumer/user-info** : Return the given user for an api key
 
 Example
+
 ```
+const currentAddress = await fetch("https://api.generaitiv.xyz/v1/consumer/user-info/", {
+  headers: authHeaders
+});
+await currentAddress.json()
+-------------------------
+{
+  "address":"0xB6BdB5F73b6d717eb6949AeE9F9551298493390E"
+}
 ```
