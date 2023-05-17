@@ -11,9 +11,9 @@ All API requests should be autheticate using the api key available on the profil
 
 Authentication is added via the headers on the request.
 An example in javascript is below
-```
+```js
 let authHeaders = new Headers();
-myHeaders.append("authorization", "Bearer [API-Key]");
+myHeaders.append("Authorization", "Bearer [API-Key]");
 myHeaders.append("Content-Type", "application/json");
 
 await fetch("https://api.generaitiv.xyz/v1/", {
@@ -26,7 +26,7 @@ await fetch("https://api.generaitiv.xyz/v1/", {
 
 Example
 
-```
+```js
 const latestTokens = await fetch("https://api.generaitiv.xyz/v1/q/latest-tokens/?page=0&page_size=50", {
   headers: authHeaders
 });
@@ -64,7 +64,7 @@ await latestTokens.json()
 
 Example
 
-```
+```js
 const latestCollections = await fetch("https://api.generaitiv.xyz/v1/q/latest-collections/?page=0&page_size=50", {
   headers: authHeaders
 });
@@ -91,7 +91,7 @@ await latestCollections.json()
 
 Example
 
-```
+```js
 const tokensInCollection = await fetch("https://api.generaitiv.xyz/v1/tokens/collection/red-every-day/?cursor=0", {
   headers: authHeaders
 });
@@ -128,7 +128,8 @@ await tokensInCollection.json()
 **/upload/token/[tokenId]/[fileName]** : This endpoint returns a signed put url for uploading an image given a tokenId. The signed url returned accepts a javascript [File](https://developer.mozilla.org/en-US/docs/Web/API/File) object as the body of a put request which will be uploaded and set as the image of the token.
 
 Example
-```
+
+```js
 const uploadPutUrl = await fetch("https://api.generaitiv.xyz/v1/upload/token/0xb6bdb5f73b6d717eb6949aee9f9551298493390e000000000000000000000002/a.jpg/", {
   headers: authHeaders
 });
@@ -144,7 +145,7 @@ await uploadPutUrl.json()
 
 Example
 
-```
+```js
 const user = await fetch("https://api.generaitiv.xyz/v1/u/0x4e3A99830E5ffb86952B14aDBD5746ce84A6F6F3/", {
   headers: authHeaders
 });
@@ -165,7 +166,7 @@ await user.json()
 
 Example
 
-```
+```js
 const userCollections = await fetch("https://api.generaitiv.xyz/v1/u/0x1BEC0E6266e97f0C7C42aa720959e46598DD8Ce1/collections/", {
   headers: authHeaders
 });
@@ -197,7 +198,7 @@ await userCollections.json()
 
 Example
 
-```
+```js
 const collectionMetadata = await fetch("https://api.generaitiv.xyz/v1/u/0x1BEC0E6266e97f0C7C42aa720959e46598DD8Ce1/collections/", {
   headers: authHeaders
 });
@@ -225,7 +226,7 @@ await collectionMetadata.json()
 
 Example
 
-```
+```js
 const tokenMetadata = await fetch("https://api.generaitiv.xyz/v1/c/0x4b3887515Cd5A0deEaBd6b59f0B8CC87d3608c95/0x1bec0e6266e97f0c7c42aa720959e46598dd8ce100000000000000000000004e/", {
   headers: authHeaders
 });
@@ -276,7 +277,7 @@ await tokenMetadata.json()
 
 Example
 
-```
+```js
 const tokenSlug = await fetch("https://api.generaitiv.xyz/v1/c/virtual/slug-from-id/0x1bec0e6266e97f0c7c42aa720959e46598dd8ce100000000000000000000004e/", {
   headers: authHeaders
 });
@@ -291,11 +292,11 @@ await tokenSlug.json()
 
 Example
 
-```
-const nextTokenId = await fetch("https://api.generaitiv.xyz/v1/c/virtual/slug-from-id/0x1bec0e6266e97f0c7c42aa720959e46598dd8ce100000000000000000000004e/", {
+```js
+const nextTokenId = await fetch("https://api.generaitiv.xyz/v1/c/virtual/next/0xB6BdB5F73b6d717eb6949AeE9F9551298493390E", {
   headers: authHeaders
 });
-await tokenSlug.json()
+await nextTokenId.json()
 -------------------------
 {
   "tokenId":"0xb6bdb5f73b6d717eb6949aee9f9551298493390e000000000000000000000002"
@@ -308,7 +309,7 @@ await tokenSlug.json()
 
 Example
 
-```
+```js
 const newToken = await fetch("https://api.generaitiv.xyz/v1/c/virtual/token/aaabbb/0xb6bdb5f73b6d717eb6949aee9f9551298493390e000000000000000000000002/", {
   headers: authHeaders,
   method: "POST",
@@ -333,7 +334,7 @@ await newToken.json()
 
 Example
 
-```
+```js
 const currentAddress = await fetch("https://api.generaitiv.xyz/v1/consumer/user-info/", {
   headers: authHeaders
 });
