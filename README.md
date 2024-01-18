@@ -479,7 +479,7 @@ Upon successful generation, or an error, a `POST` webhook request will be sent t
 
 ### Websocket endpoints
 
-> [!INFO]
+> [!NOTE]
 > These endpoints are available using this base URL. `wss://ws.generaitiv.xyz`
 
 #### CONNECT `?jwt=<jwt>&id=<workload_id>`
