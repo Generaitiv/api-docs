@@ -1,16 +1,22 @@
 # API Documentation for generaitiv
+
 API specifications for the generaitiv ecosystem
 
 ## Base url
+
 The base url for this API is
+
 ```
 https://api.generaitiv.xyz/v1/
 ```
+
 ## Authentication
+
 All API requests should be autheticate using the api key available on the profile setting page in generaitiv
 
 Authentication is added via the headers on the request.
 An example in javascript is below
+
 ```js
 let authHeaders = new Headers();
 myHeaders.append("Authorization", "Bearer [API-Key]");
@@ -22,6 +28,7 @@ await fetch("https://api.generaitiv.xyz/v1/", {
 ```
 
 ## Search endpoints
+
 **/q/latest-tokens** : This endpoint returns a list of the latest tokens listed on the platform
 
 Example
@@ -60,7 +67,7 @@ await latestTokens.json()
 }
 ```
 
-**/q/latest-collections** : This endpoint returns a list of thr latest collections 
+**/q/latest-collections** : This endpoint returns a list of thr latest collections
 
 Example
 
@@ -87,6 +94,7 @@ await latestCollections.json()
 ```
 
 ## Tokens
+
 **/tokens/collection/[slug]** : This endpoint returns tokens within a collection given a collection slug or address
 
 Example
@@ -124,7 +132,9 @@ await tokensInCollection.json()
     }, ...]
 }
 ```
+
 ## Image Upload
+
 **/upload/token/[tokenId]/[fileName]** : This endpoint returns a signed put url for uploading an image given a tokenId. The signed url returned accepts a javascript [File](https://developer.mozilla.org/en-US/docs/Web/API/File) object as the body of a put request which will be uploaded and set as the image of the token.
 
 Example
@@ -141,6 +151,7 @@ await uploadPutUrl.json()
 ```
 
 ## User endpoints
+
 **/u/[address]** : This endpoint returns the user metadata given a wallet address
 
 Example
@@ -194,6 +205,7 @@ await userCollections.json()
 ```
 
 ## Collection endpoints
+
 **/c/[slug]** : Return the metadata for a collection given a slug or address
 
 Example
@@ -344,3 +356,192 @@ await currentAddress.json()
   "address":"0xB6BdB5F73b6d717eb6949AeE9F9551298493390E"
 }
 ```
+
+## AI Generations
+
+### Endpoints
+
+#### <a name="owned-by-me"></a> GET `/training/owned-by-me`
+
+Fetches trainings owned by the authenticated user.
+
+##### Example
+
+###### Request
+
+```js
+var requestOptions = {
+  method: 'GET',
+  headers: authHeaders,
+  redirect: 'follow'
+};
+
+fetch("https://api.generaitiv.xyz/v1/training/owned-by/me", requestOptions)
+  .then(response => response.json())
+  .then(result => console.log(result))
+  .catch(error => console.error(error));
+```
+
+###### Response
+
+```json
+[
+    {
+        "id": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "name": "Example",
+        "description": "This is an example of a trained model",
+        "status": "COMPLETED",
+        "owner": "0x0000000000000000000000000000000000000000",
+        "source_model_slug": "stability-ai-sdxl"
+    }
+]
+```
+
+#### <a id="generaiting"></a> POST `/consumer/gen`
+
+Creates a new AI workload (generation).
+
+> [!NOTE]
+> Generaitiv supports both websocket and HTTP callback style image generations. Websockets include live generation progress while callbacks are only invoked at error-time or completion-time.
+>
+> To get an HTTP callback when your generation is complete, include a `webhook` property in the request body containing a URL to your callback endpoint.
+>
+> To use the websocket API to track the status of your generation, omit the `webhook` parameter in the request body. You will receive a `workload_id` and `jwt` in the response body which you can use to connect to the websocket API.
+
+> [!IMPORTANT]
+> This endpoint is rate limited and will return a `429` error if you exceed the rate limit. Please monitor social media for an announcement of subscription based fees for this endpoint. Rate limits will be increased / removed once subscription fees are in place, and unsubscribed requests will be rejected with a `402 Payment Required` status code.
+
+##### Example
+
+###### Request
+
+```js
+const requestBody = {
+    "input": {
+        "prompt": "Example",
+        "prompt_strength": 0.8,
+        "refine": "no_refiner",
+        "scheduler": "K_EULER",
+        "disable_safety_checker": true,
+        "high_noise_frac": 0.8,
+        "lora_scale": 0.6,
+        "guidance_scale": 7.5,
+        "width": 1024,
+        "height": 1024,
+        "num_inference_steps": 50
+    },
+    "model": "<model slug without brackets>",
+    "webhook": "https://your.callback.url/here"
+}
+
+const requestOptions = {
+  method: 'POST',
+  headers: authHeaders,
+  redirect: 'follow',
+  body: JSON.stringify(requestBody)
+};
+
+fetch("https://api.generaitiv.xyz/v1/consumer/gen", requestOptions)
+  .then(response => response.json())
+  .then(result => console.log(result))
+  .catch(error => console.error(error))
+```
+
+###### Response
+
+```json
+{
+    "id": "0xffffffffffffffffffffffffffffffff"
+}
+```
+
+##### Callback
+
+Upon successful generation, or an error, a `POST` webhook request will be sent to the URL specified in the `webhook` property of the `POST` to `/consumer/gen` (`https://your.callback.url/here` in the example above).
+
+###### Success
+
+```json
+{
+  "status": "COMPLETED",
+  "link": "https://metadata.generaitiv.xyz/images/asset/fffffffffffffffffffff.png"
+}
+```
+
+###### Error
+
+```json
+{
+  "status": "FAILED",
+  "message": "An optional field which may contain a string representing additional information about the reason for the failure."
+}
+```
+
+### Websocket endpoints
+
+> [!INFO]
+> These endpoints are available using this base URL. `wss://ws.generaitiv.xyz`
+
+#### CONNECT `?jwt=<jwt>&id=<workload_id>`
+
+##### Example
+
+###### Request
+
+```js
+let progress;
+let complete;
+let mediaLink;
+let error;
+
+const socket = new WebSocket("wss://ws.generaitiv.xyz?id=0xffffffffffffffffffffffffffffffff&jwt=0x0000000000000000000000000000000000000000000000000000000000000000");
+socket.addEventListener("open", (event) => {
+  console.log("Connected")
+});
+socket.addEventListener("message", (event) => {
+  const body = JSON.parse(event.data)
+  switch(body.type) {
+    case "IN_PROGRESS":
+      // IN_PROGRESS messages do not always contain a percentage field!
+      if(body.message) {
+      progress = body.message.percentage;
+      }
+      break;
+    case "COMPLETED":
+      complete = true;
+      mediaLink = body.link;
+      socket.close();
+      break;
+    case "ERROR":
+      error = true;
+      socket.close();
+      break;
+  }
+});
+```
+
+###### Message Stream
+
+```json
+{"type":"IN_PROGRESS"}
+{"type":"IN_PROGRESS","message":{"percentage":4,"totalSteps":50,"currentStep":1}}
+{"type":"IN_PROGRESS","message":{"percentage":10,"totalSteps":50,"currentStep":4}}
+{"type":"IN_PROGRESS","message":{"percentage":16,"totalSteps":50,"currentStep":7}}
+...
+{"type":"COMPLETED","link":"https://metadata.generaitiv.xyz/images/asset/fffffffffffffffffffff.png"}
+```
+
+### Custom Models
+
+> [!IMPORTANT]
+> Custom models are not yet supported. This section will be updated to reflect the API once custom models are available.
+
+You can use your API key to grant access to custom models you've trained, and allow users to interact with generaitiv to generate images on a variety of platforms.
+
+#### Finding your model
+
+Once your model has been trained, use your API key to make a `GET` request to [`https://api.generaitiv.xyz/v1/training/owned-by/me`](#owned-by-me). You will be provided a list of trainings in the JSON response body that pertain to your account.
+
+#### Using your model
+
+Once you have your model's ID in-hand, you can use this to trigger an image generation via custom model using [`https://api.generaitiv.xyz/v1/consumer/gen`](#generaiting).
